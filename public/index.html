@@ -6,73 +6,90 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
   <style>
     body { font-family: sans-serif; margin: 20px; }
-    input, select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; }
+    input, select, button { margin: 10px 0; padding: 10px; }
     #region, datalist, label[for='region'] { display: none; }
+    .vehicle-buttons button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .vehicle-buttons button.selected {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .vehicle-buttons img {
+      width: 20px;
+      height: 20px;
+    }
+    #vehicle-section, #price-section, #submit-section { display: none; }
   </style>
 </head>
 <body>
-  <h2>✨ Zip Go</h2>
+  <div style="background-color: #e53935; color: #fff; text-align: center; padding: 20px; border-radius: 8px;">
+    <img src="https://chat.openai.com/cdn-cgi/imagedelivery/L4Sq-AxSXBj3lnxSV5AVRg/22863f60-5cf1-4776-b942-7b2e7c8aa9a3/public" alt="Zip Go Logo" style="width: 180px; margin-bottom: 10px;">
+    <h2 style="margin: 0;">✨ Zip Go</h2>
+    <p style="margin: 5px 0 0; font-size: 14px;">Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
+  </div>
 
-  <label style="display:none">Tỉnh/thành phố phục vụ:</label>
-  <input list="region-list" id="region" placeholder="Nhập tỉnh/thành...">
-  <datalist id="region-list">
-    <option value="TP. HCM">
-    <option value="Hà Nội">
-    <option value="Đà Nẵng">
-    <option value="Cần Thơ">
-    <option value="Hải Phòng">
-    <option value="Huế">
-    <option value="Vũng Tàu">
-    <option value="Nha Trang">
-  </datalist>
+  <div style="margin-top: 20px;">
+    <label>Điểm đón:</label>
+    <input id="pickup" placeholder="Nhập địa điểm đón..." style="width: 100%;" oninput="checkProgress()">
 
-  <label>Điểm đón:</label>
-  <input id="pickup" placeholder="Nhập địa điểm đón...">
+    <label>Điểm đến:</label>
+    <input id="dropoff" placeholder="Nhập địa điểm đến..." style="width: 100%;" oninput="checkProgress()">
 
-  <label>Điểm đến:</label>
-  <input id="dropoff" placeholder="Nhập địa điểm đến...">
+    <div id="vehicle-section">
+      <label>Xin mời chọn loại xe:</label>
+      <div class="vehicle-buttons">
+        <button onclick="selectVehicle('xe may')"><img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png">Xe máy</button>
+        <button onclick="selectVehicle('4 cho')"><img src="https://img.icons8.com/emoji/48/oncoming-automobile.png">Ô tô 4 chỗ</button>
+        <button onclick="selectVehicle('7 cho')"><img src="https://img.icons8.com/emoji/48/minibus.png">Ô tô 7 chỗ</button>
+        <button onclick="selectVehicle('taxibot')"><img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot</button>
+      </div>
+    </div>
 
-  <label>Loại xe:</label>
-  <select id="vehicle">
-    <option value="xe may">Xe máy</option>
-    <option value="4 cho">Xe 4 chỗ</option>
-    <option value="7 cho">Xe 7 chỗ</option>
-  </select>
+    <input type="hidden" id="vehicle" value="">
 
-  <button onclick="submitForm()">✨ Đặt xe</button>
+    <div id="price-section">
+      <p id="result"></p>
+    </div>
 
-  <p id="result"></p>
+    <div id="submit-section">
+      <button onclick="submitForm()">✨ Đặt xe</button>
+    </div>
+  </div>
 
   <script>
-    const unitPrice = { "xe may": 6000, "4 cho": 10000, "7 cho": 12000 };
+    const unitPrice = { "xe may": 6000, "4 cho": 10000, "7 cho": 12000, "taxibot": 11000 };
+    const supportedRegions = { "TP. HCM": true };
 
-    // ✅ Danh sách tỉnh/thành và trạng thái dịch vụ (bật/tắt)
-    const supportedRegions = {
-      "TP. HCM": true,
-      "Hà Nội": true,
-      "Đà Nẵng": true,
-      "Cần Thơ": false,
-      "Hải Phòng": false,
-      "Huế": false,
-      "Vũng Tàu": false,
-      "Nha Trang": false
-    };
-
-    function submitForm() {
-      const region = "TP. HCM"; // default tỉnh nội bộ (ẩn đi nhưng xử lý vẫn thực thi)
-
-      if (!supportedRegions.hasOwnProperty(region)) {
-        document.getElementById('result').innerText = `Khu vực "${region}" nằm ngoài vùng dịch vụ.`;
-        return;
+    function checkProgress() {
+      const pickup = document.getElementById('pickup').value;
+      const dropoff = document.getElementById('dropoff').value;
+      if (pickup && dropoff) {
+        document.getElementById('vehicle-section').style.display = 'block';
       }
-      if (!supportedRegions[region]) {
-        document.getElementById('result').innerText = `Hiện tại Zip Go chưa bật dịch vụ cho khu vực "${region}".`;
-        return;
-      }
+    }
 
+    function selectVehicle(type) {
+      document.getElementById('vehicle').value = type;
+      document.querySelectorAll('.vehicle-buttons button').forEach(btn => btn.classList.remove('selected'));
+      event.target.classList.add('selected');
+      calculatePrice();
+    }
+
+    function calculatePrice() {
       const origin = document.getElementById('pickup').value;
       const destination = document.getElementById('dropoff').value;
       const vehicle = document.getElementById('vehicle').value;
+
+      if (!origin || !destination || !vehicle) return;
 
       const service = new google.maps.DistanceMatrixService();
       service.getDistanceMatrix({
@@ -84,36 +101,41 @@
         if (status === 'OK') {
           const element = response.rows[0].elements[0];
           if (element.status !== 'OK') {
-            document.getElementById('result').innerText = 'Không thể tính khoảng cách. Vui lòng kiểm tra lại địa chỉ.';
+            document.getElementById('result').innerText = 'Không thể tính khoảng cách.';
             return;
           }
-
-          const distanceText = element.distance.text;
           const distanceVal = element.distance.value / 1000;
-
           if (distanceVal > 5) {
-            document.getElementById('result').innerText = 'Hiện tại không có xe nào ở gần điểm đón của bạn (trong phạm vi 5km).';
+            document.getElementById('result').innerText = 'Không có xe nào gần bạn trong 5km.';
             return;
           }
-
-          const price = Math.round(distanceVal * unitPrice[vehicle]);
-
-          document.getElementById('result').innerText =
-            `Khoảng cách: ${distanceText} - Cước phí ước tính: ${price.toLocaleString()} đ`;
-
-          fetch('https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ region, origin, destination, vehicle, distance_km: distanceVal, price })
-          });
-        } else {
-          document.getElementById('result').innerText = 'Lỗi khi tính khoảng cách!';
+          const price = Math.round(distanceVal * (unitPrice[vehicle] || 10000));
+          document.getElementById('result').innerText = `Khoảng cách: ${element.distance.text} - Cước phí: ${price.toLocaleString()} đ`;
+          document.getElementById('price-section').style.display = 'block';
+          document.getElementById('submit-section').style.display = 'block';
         }
       });
     }
 
-    const pickupInput = new google.maps.places.Autocomplete(document.getElementById('pickup'));
-    const dropoffInput = new google.maps.places.Autocomplete(document.getElementById('dropoff'));
+    function submitForm() {
+      const region = "TP. HCM";
+      const origin = document.getElementById('pickup').value;
+      const destination = document.getElementById('dropoff').value;
+      const vehicle = document.getElementById('vehicle').value;
+      const priceText = document.getElementById('result').innerText;
+      const priceMatch = priceText.match(/([0-9,.]+) đ/);
+      const price = priceMatch ? parseInt(priceMatch[1].replace(/[,.]/g, '')) : 0;
+
+      fetch('https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ region, origin, destination, vehicle, price })
+      });
+      alert("🚗 Đặt xe thành công! Hệ thống đang điều phối tài xế...");
+    }
+
+    new google.maps.places.Autocomplete(document.getElementById('pickup'));
+    new google.maps.places.Autocomplete(document.getElementById('dropoff'));
   </script>
 </body>
 </html>
