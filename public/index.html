@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Zip Go - Đặt xe</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    input, select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; }
+    #region, datalist, label[for='region'] { display: none; }
+  </style>
+</head>
+<body>
+  <h2>✨ Zip Go</h2>
+
+  <label style="display:none">Tỉnh/thành phố phục vụ:</label>
+  <input list="region-list" id="region" placeholder="Nhập tỉnh/thành...">
+  <datalist id="region-list">
+    <option value="TP. HCM">
+    <option value="Hà Nội">
+    <option value="Đà Nẵng">
+    <option value="Cần Thơ">
+    <option value="Hải Phòng">
+    <option value="Huế">
+    <option value="Vũng Tàu">
+    <option value="Nha Trang">
+  </datalist>
+
+  <label>Điểm đón:</label>
+  <input id="pickup" placeholder="Nhập địa điểm đón...">
+
+  <label>Điểm đến:</label>
+  <input id="dropoff" placeholder="Nhập địa điểm đến...">
+
+  <label>Loại xe:</label>
+  <select id="vehicle">
+    <option value="xe may">Xe máy</option>
+    <option value="4 cho">Xe 4 chỗ</option>
+    <option value="7 cho">Xe 7 chỗ</option>
+  </select>
+
+  <button onclick="submitForm()">✨ Đặt xe</button>
+
+  <p id="result"></p>
+
+  <script>
+    const unitPrice = { "xe may": 6000, "4 cho": 10000, "7 cho": 12000 };
+
+    // ✅ Danh sách tỉnh/thành và trạng thái dịch vụ (bật/tắt)
+    const supportedRegions = {
+      "TP. HCM": true,
+      "Hà Nội": true,
+      "Đà Nẵng": true,
+      "Cần Thơ": false,
+      "Hải Phòng": false,
+      "Huế": false,
+      "Vũng Tàu": false,
+      "Nha Trang": false
+    };
+
+    function submitForm() {
+      const region = "TP. HCM"; // default tỉnh nội bộ (ẩn đi nhưng xử lý vẫn thực thi)
+
+      if (!supportedRegions.hasOwnProperty(region)) {
+        document.getElementById('result').innerText = `Khu vực "${region}" nằm ngoài vùng dịch vụ.`;
+        return;
+      }
+      if (!supportedRegions[region]) {
+        document.getElementById('result').innerText = `Hiện tại Zip Go chưa bật dịch vụ cho khu vực "${region}".`;
+        return;
+      }
+
+      const origin = document.getElementById('pickup').value;
+      const destination = document.getElementById('dropoff').value;
+      const vehicle = document.getElementById('vehicle').value;
+
+      const service = new google.maps.DistanceMatrixService();
+      service.getDistanceMatrix({
+        origins: [origin],
+        destinations: [destination],
+        travelMode: 'DRIVING',
+        unitSystem: google.maps.UnitSystem.METRIC,
+      }, (response, status) => {
+        if (status === 'OK') {
+          const element = response.rows[0].elements[0];
+          if (element.status !== 'OK') {
+            document.getElementById('result').innerText = 'Không thể tính khoảng cách. Vui lòng kiểm tra lại địa chỉ.';
+            return;
+          }
+
+          const distanceText = element.distance.text;
+          const distanceVal = element.distance.value / 1000;
+
+          if (distanceVal > 5) {
+            document.getElementById('result').innerText = 'Hiện tại không có xe nào ở gần điểm đón của bạn (trong phạm vi 5km).';
+            return;
+          }
+
+          const price = Math.round(distanceVal * unitPrice[vehicle]);
+
+          document.getElementById('result').innerText =
+            `Khoảng cách: ${distanceText} - Cước phí ước tính: ${price.toLocaleString()} đ`;
+
+          fetch('https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ region, origin, destination, vehicle, distance_km: distanceVal, price })
+          });
+        } else {
+          document.getElementById('result').innerText = 'Lỗi khi tính khoảng cách!';
+        }
+      });
+    }
+
+    const pickupInput = new google.maps.places.Autocomplete(document.getElementById('pickup'));
+    const dropoffInput = new google.maps.places.Autocomplete(document.getElementById('dropoff'));
+  </script>
+</body>
+</html>
