@@ -7,90 +7,165 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
   <style>
     body {
-      margin: 0;
       font-family: sans-serif;
-      background-color: #cc2a2a;
+      margin: 0;
+      padding: 20px;
+      background-color: #c62828;
+      background-image: url('public/sao-vang.png'); /* nếu muốn hiệu ứng ngôi sao vàng chìm */
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
       color: white;
       text-align: center;
     }
-    .header {
-      padding: 20px;
-      position: relative;
-    }
-    .header img.logo {
-      width: 60px;
-      margin-bottom: 10px;
-    }
-    .header img.star {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 200px;
-      opacity: 0.15;
-      pointer-events: none;
-    }
-    h1 {
-      margin: 0;
-      font-size: 32px;
-    }
-    p {
-      margin: 10px 0 20px;
-    }
-    input {
-      width: 80%;
+
+    input, button {
       padding: 12px;
-      margin-bottom: 10px;
-      border: none;
-      border-radius: 6px;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 600px;
       font-size: 16px;
     }
+
+    .logo img {
+      width: 100px;
+      margin-bottom: 10px;
+    }
+
     .vehicle-buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
       margin-top: 20px;
     }
+
     .vehicle-buttons button {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background-color: white;
-      color: black;
-      border: none;
-      border-radius: 6px;
+      margin: 5px;
       padding: 10px 16px;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      border: none;
+      border-radius: 8px;
+      background-color: white;
+      color: #c62828;
       font-weight: bold;
       cursor: pointer;
     }
+
     .vehicle-buttons img {
       width: 24px;
-      height: 24px;
+      margin-right: 8px;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    #submit {
+      margin-top: 10px;
+      font-size: 16px;
+      background-color: #ffc107;
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="/logo-zipgo.png" alt="Logo" class="logo" />
-    <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg" alt="Sao vàng" class="star" />
-    <h1>✨ Zip Go</h1>
-    <p>Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
+  <div class="logo">
+    <img src="public/logo-zipgo.png" alt="Logo">
+  </div>
+  <h1>✨ Zip Go</h1>
+  <p>Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
+
+  <input id="pickup" placeholder="Nhập địa chỉ đón..." oninput="checkForm()" />
+  <input id="dropoff" placeholder="Nhập địa chỉ đến..." oninput="checkForm()" />
+
+  <div id="vehicle-section" style="display:none;" class="vehicle-buttons">
+    <button onclick="selectVehicle('xe may')">
+      <img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png">Xe máy
+    </button>
+    <button onclick="selectVehicle('4 cho')">
+      <img src="https://img.icons8.com/emoji/48/oncoming-automobile.png">Ô tô 4 chỗ
+    </button>
+    <button onclick="selectVehicle('7 cho')">
+      <img src="https://img.icons8.com/emoji/48/minibus.png">Ô tô 7 chỗ
+    </button>
+    <button onclick="selectVehicle('taxibot')">
+      <img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot
+    </button>
   </div>
 
-  <input type="text" placeholder="Nhập địa chỉ đón..." />
-  <input type="text" placeholder="Nhập địa chỉ đến..." />
+  <div id="result"></div>
+  <button id="submit" style="display:none;" onclick="submitForm()">🚕 Đặt xe</button>
 
-  <div class="vehicle-buttons">
-    <button><img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png"/> Xe máy</button>
-    <button><img src="https://img.icons8.com/emoji/48/oncoming-automobile.png"/> Ô tô 4 chỗ</button>
-    <button><img src="https://img.icons8.com/emoji/48/minibus.png"/> Ô tô 7 chỗ</button>
-    <button><img src="https://img.icons8.com/emoji/48/taxi.png"/> TaxiBot</button>
-  </div>
+  <script>
+    const prices = {
+      "xe may": 6000,
+      "4 cho": 10000,
+      "7 cho": 12000,
+      "taxibot": 11000
+    };
+
+    function checkForm() {
+      const pickup = document.getElementById("pickup").value.trim();
+      const dropoff = document.getElementById("dropoff").value.trim();
+      if (pickup && dropoff) {
+        document.getElementById("vehicle-section").style.display = "block";
+      }
+    }
+
+    function selectVehicle(vehicle) {
+      const pickup = document.getElementById("pickup").value;
+      const dropoff = document.getElementById("dropoff").value;
+
+      if (!pickup || !dropoff) return;
+
+      const service = new google.maps.DistanceMatrixService();
+      service.getDistanceMatrix({
+        origins: [pickup],
+        destinations: [dropoff],
+        travelMode: 'DRIVING',
+        unitSystem: google.maps.UnitSystem.METRIC,
+      }, (response, status) => {
+        if (status === 'OK') {
+          const element = response.rows[0].elements[0];
+          const distance = element.distance.value / 1000;
+          const cost = Math.round(distance * (prices[vehicle] || 10000));
+          document.getElementById("result").innerText = `Khoảng cách: ${element.distance.text}, Cước phí: ${cost.toLocaleString()}đ`;
+          document.getElementById("submit").style.display = "inline-block";
+        }
+      });
+
+      document.getElementById("submit").dataset.vehicle = vehicle;
+    }
+
+    function submitForm() {
+      const origin = document.getElementById("pickup").value;
+      const destination = document.getElementById("dropoff").value;
+      const vehicle = document.getElementById("submit").dataset.vehicle;
+
+      const priceText = document.getElementById("result").innerText;
+      const priceMatch = priceText.match(/Cước phí: ([0-9.,]+)đ/);
+      const price = priceMatch ? parseInt(priceMatch[1].replace(/[.,]/g, "")) : 0;
+
+      fetch("https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          region: "TP. HCM",
+          origin,
+          destination,
+          vehicle,
+          price
+        })
+      });
+      alert("🚗 Đặt xe thành công! Hệ thống đang điều phối tài xế...");
+    }
+
+    new google.maps.places.Autocomplete(document.getElementById("pickup"));
+    new google.maps.places.Autocomplete(document.getElementById("dropoff"));
+  </script>
 </body>
 </html>
-"""
-
-output_path = Path("/mnt/data/index_final_zipgo.html")
-output_path.write_text(html_content.strip(), encoding="utf-8")
-output_path.name
