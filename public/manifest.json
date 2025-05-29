@@ -1,0 +1,17 @@
+{
+  "name": "Zip Go",
+  "short_name": "ZipGo",
+  "description": "Ứng dụng gọi xe công nghệ – hỗ trợ chọn phương tiện, tính phí và điều phối tài xế.",
+  "start_url": "https://zipgo-ui.vercel.app/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c62828",
+  "icons": [
+    {
+      "src": "/logo-zipgo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
