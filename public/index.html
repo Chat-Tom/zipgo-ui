@@ -1,11 +1,13 @@
-<!DOCTYPE html>
+file_output = "/mnt/data/index_final_official.html"
+with open(file_output, "w", encoding="utf-8") as f:
+    f.write(f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Zip Go - Đặt xe</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
   <style>
-    body {
+    body {{
       margin: 0;
       font-family: sans-serif;
       background-color: #d32f2f;
@@ -13,20 +15,20 @@
       text-align: center;
       position: relative;
       padding: 20px;
-    }
-    .background {
+    }}
+    .background {{
       position: fixed;
       inset: 0;
       background: url('https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg') no-repeat center center;
-      background-size: 220px;
-      opacity: 0.13;
+      background-size: 240px;
+      opacity: 0.14;
       z-index: -1;
-    }
-    .logo {
+    }}
+    .logo {{
       width: 140px;
       margin: 10px auto 20px;
-    }
-    input, button {
+    }}
+    input, button {{
       width: 90%;
       max-width: 500px;
       padding: 12px;
@@ -34,25 +36,25 @@
       border: none;
       border-radius: 5px;
       font-size: 16px;
-    }
-    input {
+    }}
+    input {{
       color: black;
-    }
-    button {
+    }}
+    button {{
       background-color: white;
       color: #d32f2f;
       font-weight: bold;
       cursor: pointer;
-    }
-    .vehicle-buttons {
+    }}
+    .vehicle-buttons {{
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       gap: 10px;
       margin: 20px auto;
       max-width: 600px;
-    }
-    .vehicle-buttons button {
+    }}
+    .vehicle-buttons button {{
       background-color: white;
       color: #d32f2f;
       padding: 10px 15px;
@@ -63,14 +65,14 @@
       gap: 8px;
       font-weight: bold;
       min-width: 120px;
-    }
-    .vehicle-buttons img {
+    }}
+    .vehicle-buttons img {{
       width: 20px;
       height: 20px;
-    }
-    #price-section, #submit-section {
+    }}
+    #price-section, #submit-section {{
       margin-top: 20px;
-    }
+    }}
   </style>
 </head>
 <body>
@@ -103,60 +105,60 @@
   </div>
 
   <script>
-    const unitPrice = {
+    const unitPrice = {{
       "xe may": 6000,
       "4 cho": 10000,
       "7 cho": 12000,
       "taxibot": 11000
-    };
+    }};
 
-    function checkProgress() {
+    function checkProgress() {{
       const pickup = document.getElementById('pickup').value;
       const dropoff = document.getElementById('dropoff').value;
-      if (pickup && dropoff) {
+      if (pickup && dropoff) {{
         document.getElementById('vehicle-section').style.display = 'flex';
-      }
-    }
+      }}
+    }}
 
-    function selectVehicle(type) {
+    function selectVehicle(type) {{
       document.getElementById('vehicle').value = type;
       document.querySelectorAll('.vehicle-buttons button').forEach(btn => btn.style.backgroundColor = "white");
       event.target.style.backgroundColor = "#ffcccb";
       calculatePrice();
-    }
+    }}
 
-    function calculatePrice() {
+    function calculatePrice() {{
       const origin = document.getElementById('pickup').value;
       const destination = document.getElementById('dropoff').value;
       const vehicle = document.getElementById('vehicle').value;
       if (!origin || !destination || !vehicle) return;
       const service = new google.maps.DistanceMatrixService();
-      service.getDistanceMatrix({
+      service.getDistanceMatrix({{
         origins: [origin],
         destinations: [destination],
         travelMode: 'DRIVING',
         unitSystem: google.maps.UnitSystem.METRIC,
-      }, (response, status) => {
-        if (status === 'OK') {
+      }}, (response, status) => {{
+        if (status === 'OK') {{
           const element = response.rows[0].elements[0];
-          if (element.status !== 'OK') {
+          if (element.status !== 'OK') {{
             document.getElementById('result').innerText = 'Không thể tính khoảng cách.';
             return;
-          }
+          }}
           const distanceVal = element.distance.value / 1000;
-          if (distanceVal > 5) {
+          if (distanceVal > 5) {{
             document.getElementById('result').innerText = 'Không có xe nào gần bạn trong 5km.';
             return;
-          }
+          }}
           const price = Math.round(distanceVal * (unitPrice[vehicle] || 10000));
           document.getElementById('result').innerText =
-            `Khoảng cách: ${element.distance.text} - Cước phí: ${price.toLocaleString()} đ`;
+            `Khoảng cách: ${{element.distance.text}} - Cước phí: ${{price.toLocaleString()}} đ`;
           document.getElementById('submit-section').style.display = 'block';
-        }
-      });
-    }
+        }}
+      }});
+    }}
 
-    function submitForm() {
+    function submitForm() {{
       const origin = document.getElementById('pickup').value;
       const destination = document.getElementById('dropoff').value;
       const vehicle = document.getElementById('vehicle').value;
@@ -165,23 +167,26 @@
       const price = priceMatch ? parseInt(priceMatch[1].replace(/[,.]/g, '')) : 0;
       const distance_km = parseFloat(price / (unitPrice[vehicle] || 10000)).toFixed(2);
 
-      fetch('https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook', {
+      fetch('https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook', {{
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        headers: {{ 'Content-Type': 'application/json' }},
+        body: JSON.stringify({{
           region: "TP. HCM",
           origin,
           destination,
           vehicle,
           distance_km,
           price
-        })
-      });
+        }})
+      }});
       alert("🚗 Đặt xe thành công! Hệ thống đang điều phối tài xế...");
-    }
+    }}
 
     new google.maps.places.Autocomplete(document.getElementById('pickup'));
     new google.maps.places.Autocomplete(document.getElementById('dropoff'));
   </script>
 </body>
 </html>
+""")
+
+file_output
