@@ -12,6 +12,7 @@
       background-color: #D32F2F;
       color: white;
       text-align: center;
+      position: relative;
     }
 
     .star-bg {
@@ -19,23 +20,29 @@
       top: -30px;
       left: 50%;
       transform: translateX(-50%);
-      opacity: 0.15;
-      width: 180px;
+      opacity: 0.12;
+      width: 200px;
       pointer-events: none;
     }
 
+    .logo {
+      width: 64px;
+      margin-bottom: 10px;
+    }
+
     h1 {
-      margin-top: 0;
+      margin-top: 10px;
       font-size: 36px;
     }
 
     input {
       padding: 12px;
-      width: 40%;
-      margin: 10px;
-      border-radius: 5px;
+      width: 80%;
+      margin: 10px auto;
+      border-radius: 8px;
       border: none;
       font-size: 16px;
+      display: block;
     }
 
     .vehicle-buttons {
@@ -43,11 +50,11 @@
     }
 
     .vehicle-buttons button {
-      margin: 10px 8px;
-      padding: 10px 16px;
+      margin: 8px;
+      padding: 10px 14px;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 10px;
+      font-size: 14px;
       cursor: pointer;
       background-color: white;
       color: #D32F2F;
@@ -84,17 +91,20 @@
   </style>
 </head>
 <body>
-  <!-- Sao vàng nền -->
+  <!-- Sao vàng nền chìm -->
   <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg" class="star-bg" alt="Sao vàng mờ"/>
+
+  <!-- Logo Zip Go -->
+  <img src="logo-zipgo.png" alt="Logo" class="logo" />
 
   <!-- Tiêu đề -->
   <h1>✨ Zip Go</h1>
   <p style="font-size: 18px; font-weight: 500;">Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
 
-  <!-- Ô nhập -->
+  <!-- Nhập địa chỉ -->
   <div>
-    <input id="pickup" placeholder="Nhập địa điểm đón..." oninput="checkProgress()">
-    <input id="dropoff" placeholder="Nhập địa điểm đến..." oninput="checkProgress()">
+    <input id="pickup" placeholder="Nhập địa chỉ đón..." oninput="checkProgress()">
+    <input id="dropoff" placeholder="Nhập địa chỉ đến..." oninput="checkProgress()">
   </div>
 
   <!-- Nút chọn loại xe -->
@@ -105,9 +115,11 @@
     <button onclick="selectVehicle('taxibot')"><img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot</button>
   </div>
 
+  <!-- Kết quả và nút đặt xe -->
   <div id="price-result"></div>
   <button id="submit-btn" style="display:none;" onclick="submitForm()">🚕 Đặt xe</button>
 
+  <!-- Script xử lý -->
   <script>
     const unitPrice = { "xe may": 6000, "4 cho": 10000, "7 cho": 12000, "taxibot": 11000 };
 
