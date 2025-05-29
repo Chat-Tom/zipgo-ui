@@ -1,9 +1,9 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" }
-  ]
-}
-{
   "version": 2,
-  "//": "force redeploy at 16:02 by Tom"
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
