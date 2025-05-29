@@ -1,191 +1,96 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Zip Go - Đặt xe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 40px 20px;
-      background-color: #D32F2F;
+      font-family: sans-serif;
+      background-color: #cc2a2a;
       color: white;
       text-align: center;
+    }
+    .header {
+      padding: 20px;
       position: relative;
     }
-
-    .star-bg {
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0.12;
-      width: 200px;
-      pointer-events: none;
-    }
-
-    .logo {
-      width: 64px;
+    .header img.logo {
+      width: 60px;
       margin-bottom: 10px;
     }
-
+    .header img.star {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      opacity: 0.15;
+      pointer-events: none;
+    }
     h1 {
-      margin-top: 10px;
-      font-size: 36px;
+      margin: 0;
+      font-size: 32px;
     }
-
+    p {
+      margin: 10px 0 20px;
+    }
     input {
-      padding: 12px;
       width: 80%;
-      margin: 10px auto;
-      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
       border: none;
+      border-radius: 6px;
       font-size: 16px;
-      display: block;
     }
-
     .vehicle-buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
       margin-top: 20px;
     }
-
     .vehicle-buttons button {
-      margin: 8px;
-      padding: 10px 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      cursor: pointer;
-      background-color: white;
-      color: #D32F2F;
-      font-weight: bold;
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      background-color: white;
+      color: black;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-weight: bold;
+      cursor: pointer;
     }
-
     .vehicle-buttons img {
       width: 24px;
       height: 24px;
     }
-
-    .vehicle-buttons button.selected {
-      background-color: #FFC107;
-      color: black;
-    }
-
-    #price-result {
-      margin-top: 20px;
-      font-size: 18px;
-    }
-
-    #submit-btn {
-      margin-top: 20px;
-      padding: 12px 24px;
-      font-size: 18px;
-      background-color: #FFC107;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <!-- Sao vàng nền chìm -->
-  <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg" class="star-bg" alt="Sao vàng mờ"/>
-
-  <!-- Logo Zip Go -->
-  <img src="/logo-zipgo.png" alt="Logo" class="logo" />
-
-  <!-- Tiêu đề -->
-  <h1>✨ Zip Go</h1>
-  <p style="font-size: 18px; font-weight: 500;">Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
-
-  <!-- Nhập địa chỉ -->
-  <div>
-    <input id="pickup" placeholder="Nhập địa chỉ đón..." oninput="checkProgress()">
-    <input id="dropoff" placeholder="Nhập địa chỉ đến..." oninput="checkProgress()">
+  <div class="header">
+    <img src="/logo-zipgo.png" alt="Logo" class="logo" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg" alt="Sao vàng" class="star" />
+    <h1>✨ Zip Go</h1>
+    <p>Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
   </div>
 
-  <!-- Nút chọn loại xe -->
-  <div class="vehicle-buttons" id="vehicle-section" style="display: none;">
-    <button onclick="selectVehicle('xe may')"><img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png">Xe máy</button>
-    <button onclick="selectVehicle('4 cho')"><img src="https://img.icons8.com/emoji/48/oncoming-automobile.png">Ô tô 4 chỗ</button>
-    <button onclick="selectVehicle('7 cho')"><img src="https://img.icons8.com/emoji/48/minibus.png">Ô tô 7 chỗ</button>
-    <button onclick="selectVehicle('taxibot')"><img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot</button>
+  <input type="text" placeholder="Nhập địa chỉ đón..." />
+  <input type="text" placeholder="Nhập địa chỉ đến..." />
+
+  <div class="vehicle-buttons">
+    <button><img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png"/> Xe máy</button>
+    <button><img src="https://img.icons8.com/emoji/48/oncoming-automobile.png"/> Ô tô 4 chỗ</button>
+    <button><img src="https://img.icons8.com/emoji/48/minibus.png"/> Ô tô 7 chỗ</button>
+    <button><img src="https://img.icons8.com/emoji/48/taxi.png"/> TaxiBot</button>
   </div>
-
-  <!-- Kết quả và nút đặt xe -->
-  <div id="price-result"></div>
-  <button id="submit-btn" style="display:none;" onclick="submitForm()">🚕 Đặt xe</button>
-
-  <!-- Script xử lý -->
-  <script>
-    const unitPrice = { "xe may": 6000, "4 cho": 10000, "7 cho": 12000, "taxibot": 11000 };
-
-    function checkProgress() {
-      const pickup = document.getElementById('pickup').value;
-      const dropoff = document.getElementById('dropoff').value;
-      if (pickup && dropoff) {
-        document.getElementById('vehicle-section').style.display = 'block';
-      }
-    }
-
-    function selectVehicle(type) {
-      document.querySelectorAll('.vehicle-buttons button').forEach(btn => btn.classList.remove('selected'));
-      event.target.classList.add('selected');
-      calculatePrice(type);
-    }
-
-    function calculatePrice(vehicleType) {
-      const origin = document.getElementById('pickup').value;
-      const destination = document.getElementById('dropoff').value;
-
-      if (!origin || !destination || !vehicleType) return;
-
-      const service = new google.maps.DistanceMatrixService();
-      service.getDistanceMatrix({
-        origins: [origin],
-        destinations: [destination],
-        travelMode: 'DRIVING',
-        unitSystem: google.maps.UnitSystem.METRIC,
-      }, (response, status) => {
-        if (status === 'OK') {
-          const element = response.rows[0].elements[0];
-          if (element.status !== 'OK') {
-            document.getElementById('price-result').innerText = 'Không thể tính khoảng cách.';
-            return;
-          }
-          const distanceKm = element.distance.value / 1000;
-          if (distanceKm > 5) {
-            document.getElementById('price-result').innerText = 'Không có xe nào gần bạn trong 5km.';
-            return;
-          }
-          const price = Math.round(distanceKm * unitPrice[vehicleType]);
-          document.getElementById('price-result').innerText = `📍 Khoảng cách: ${element.distance.text} | 💰 Cước phí: ${price.toLocaleString()} đ`;
-          document.getElementById('submit-btn').style.display = 'inline-block';
-        }
-      });
-    }
-
-    function submitForm() {
-      const origin = document.getElementById('pickup').value;
-      const destination = document.getElementById('dropoff').value;
-      const vehicle = document.querySelector('.vehicle-buttons button.selected')?.innerText || '';
-      const priceText = document.getElementById('price-result').innerText;
-      const priceMatch = priceText.match(/([0-9,.]+) đ/);
-      const price = priceMatch ? parseInt(priceMatch[1].replace(/[,.]/g, '')) : 0;
-
-      fetch('https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origin, destination, vehicle, price })
-      });
-      alert("🚗 Đặt xe thành công! Hệ thống đang điều phối tài xế...");
-    }
-
-    new google.maps.places.Autocomplete(document.getElementById('pickup'));
-    new google.maps.places.Autocomplete(document.getElementById('dropoff'));
-  </script>
 </body>
 </html>
+"""
+
+output_path = Path("/mnt/data/index_final_zipgo.html")
+output_path.write_text(html_content.strip(), encoding="utf-8")
+output_path.name
