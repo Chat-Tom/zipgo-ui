@@ -1,5 +1,7 @@
-# Tạo lại file index_final.html theo nội dung đã mô tả
-html_content = """
+# Sau khi reset trạng thái, tạo lại file HTML "index_final_cleaned.html"
+html_fixed_path = "/mnt/data/index_final_cleaned.html"
+
+html_fixed_content = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -8,69 +10,91 @@ html_content = """
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
   <style>
     body {
-      font-family: sans-serif;
       margin: 0;
-      padding: 20px;
+      font-family: sans-serif;
+      background-color: #d32f2f;
+      color: white;
+      text-align: center;
       position: relative;
+      padding: 20px;
     }
-    input, select, button {
-      margin: 10px 0;
-      padding: 10px;
-      width: 100%;
+    .background {
+      position: fixed;
+      inset: 0;
+      background: url('https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg') no-repeat center center;
+      background-size: 180px;
+      opacity: 0.15;
+      z-index: -1;
+    }
+    input, button {
+      width: 90%;
+      max-width: 500px;
+      padding: 12px;
+      margin: 10px auto;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    input {
+      color: black;
+    }
+    button {
+      background-color: white;
+      color: #d32f2f;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .vehicle-buttons {
+      margin: 20px 0;
     }
     .vehicle-buttons button {
-      padding: 10px 20px;
-      margin-right: 10px;
-      border: 1px solid #ccc;
+      background-color: white;
+      color: #d32f2f;
+      margin: 5px;
+      padding: 10px 15px;
+      border: none;
       border-radius: 5px;
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-    }
-    .vehicle-buttons button.selected {
-      background-color: #007bff;
-      color: white;
-      border-color: #007bff;
+      font-weight: bold;
     }
     .vehicle-buttons img {
       width: 20px;
       height: 20px;
     }
-    #vehicle-section, #price-section, #submit-section {
-      display: none;
+    #price-section, #submit-section {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div style="position: fixed; inset: 0; background: #d32f2f url('https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg') no-repeat center center; background-size: 200px; opacity: 0.2; z-index: -1;"></div>
+  <div class="background"></div>
 
-  <h2 style="margin: 0; font-size: 28px; font-weight: bold; color: white;">✨ Zip Go</h2>
-  <p style="margin: 8px 0 20px; font-size: 16px; font-weight: 500; color: white;">Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
+  <h1>✨ Zip Go</h1>
+  <p>Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
 
-  <label>Điểm đón:</label>
   <input id="pickup" placeholder="Nhập địa điểm đón..." oninput="checkProgress()">
-
-  <label>Điểm đến:</label>
   <input id="dropoff" placeholder="Nhập địa điểm đến..." oninput="checkProgress()">
 
-  <div id="vehicle-section">
-    <label>Chọn loại xe:</label>
-    <div class="vehicle-buttons">
-      <button onclick="selectVehicle('xe may')"><img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png">Xe máy</button>
-      <button onclick="selectVehicle('4 cho')"><img src="https://img.icons8.com/emoji/48/oncoming-automobile.png">Ô tô 4 chỗ</button>
-      <button onclick="selectVehicle('7 cho')"><img src="https://img.icons8.com/emoji/48/minibus.png">Ô tô 7 chỗ</button>
-      <button onclick="selectVehicle('taxibot')"><img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot</button>
-    </div>
+  <div id="vehicle-section" class="vehicle-buttons" style="display: none;">
+    <button onclick="selectVehicle('xe may')">
+      <img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png">Xe máy
+    </button>
+    <button onclick="selectVehicle('4 cho')">
+      <img src="https://img.icons8.com/emoji/48/oncoming-automobile.png">Ô tô 4 chỗ
+    </button>
+    <button onclick="selectVehicle('7 cho')">
+      <img src="https://img.icons8.com/emoji/48/minibus.png">Ô tô 7 chỗ
+    </button>
+    <button onclick="selectVehicle('taxibot')">
+      <img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot
+    </button>
   </div>
 
   <input type="hidden" id="vehicle" value="">
-
-  <div id="price-section">
-    <p id="result"></p>
-  </div>
-
-  <div id="submit-section">
+  <div id="price-section"><p id="result"></p></div>
+  <div id="submit-section" style="display: none;">
     <button onclick="submitForm()">✨ Đặt xe</button>
   </div>
 
@@ -87,8 +111,8 @@ html_content = """
 
     function selectVehicle(type) {
       document.getElementById('vehicle').value = type;
-      document.querySelectorAll('.vehicle-buttons button').forEach(btn => btn.classList.remove('selected'));
-      event.target.classList.add('selected');
+      document.querySelectorAll('.vehicle-buttons button').forEach(btn => btn.style.backgroundColor = "white");
+      event.target.style.backgroundColor = "#ffcccb";
       calculatePrice();
     }
 
@@ -96,9 +120,7 @@ html_content = """
       const origin = document.getElementById('pickup').value;
       const destination = document.getElementById('dropoff').value;
       const vehicle = document.getElementById('vehicle').value;
-
       if (!origin || !destination || !vehicle) return;
-
       const service = new google.maps.DistanceMatrixService();
       service.getDistanceMatrix({
         origins: [origin],
@@ -119,7 +141,6 @@ html_content = """
           }
           const price = Math.round(distanceVal * (unitPrice[vehicle] || 10000));
           document.getElementById('result').innerText = `Khoảng cách: ${element.distance.text} - Cước phí: ${price.toLocaleString()} đ`;
-          document.getElementById('price-section').style.display = 'block';
           document.getElementById('submit-section').style.display = 'block';
         }
       });
@@ -149,9 +170,7 @@ html_content = """
 </html>
 """
 
-# Lưu nội dung HTML thành file
-output_path = "/mnt/data/index_final.html"
-with open(output_path, "w", encoding="utf-8") as f:
-    f.write(html_content)
+with open(html_fixed_path, "w", encoding="utf-8") as f:
+    f.write(html_fixed_content)
 
-output_path
+html_fixed_path
