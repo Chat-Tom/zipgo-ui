@@ -1,3 +1,5 @@
+# Tạo lại file index_final.html theo nội dung đã mô tả
+html_content = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -5,9 +7,17 @@
   <title>Zip Go - Đặt xe</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    input, select, button { margin: 10px 0; padding: 10px; }
-    #region, datalist, label[for='region'] { display: none; }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      position: relative;
+    }
+    input, select, button {
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+    }
     .vehicle-buttons button {
       padding: 10px 20px;
       margin-right: 10px;
@@ -27,50 +37,45 @@
       width: 20px;
       height: 20px;
     }
-    #vehicle-section, #price-section, #submit-section { display: none; }
+    #vehicle-section, #price-section, #submit-section {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Gold_Star.svg/200px-Gold_Star.svg.png" alt="Sao vàng" style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); opacity: 0.2; width: 160px; pointer-events: none;">
-    
-    <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg" alt="Sao vàng" style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); opacity: 0.2; width: 200px; pointer-events: none;">
+  <div style="position: fixed; inset: 0; background: #d32f2f url('https://upload.wikimedia.org/wikipedia/commons/2/21/Gold_Star.svg') no-repeat center center; background-size: 200px; opacity: 0.2; z-index: -1;"></div>
 
-<h2 style="margin: 0; font-size: 28px; font-weight: bold;">✨ Zip Go</h2>
-    <p style="margin: 8px 0 0; font-size: 16px; font-weight: 500;">Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
+  <h2 style="margin: 0; font-size: 28px; font-weight: bold; color: white;">✨ Zip Go</h2>
+  <p style="margin: 8px 0 20px; font-size: 16px; font-weight: 500; color: white;">Gọi xe thông minh - Ủng hộ sản phẩm Việt</p>
+
+  <label>Điểm đón:</label>
+  <input id="pickup" placeholder="Nhập địa điểm đón..." oninput="checkProgress()">
+
+  <label>Điểm đến:</label>
+  <input id="dropoff" placeholder="Nhập địa điểm đến..." oninput="checkProgress()">
+
+  <div id="vehicle-section">
+    <label>Chọn loại xe:</label>
+    <div class="vehicle-buttons">
+      <button onclick="selectVehicle('xe may')"><img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png">Xe máy</button>
+      <button onclick="selectVehicle('4 cho')"><img src="https://img.icons8.com/emoji/48/oncoming-automobile.png">Ô tô 4 chỗ</button>
+      <button onclick="selectVehicle('7 cho')"><img src="https://img.icons8.com/emoji/48/minibus.png">Ô tô 7 chỗ</button>
+      <button onclick="selectVehicle('taxibot')"><img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot</button>
+    </div>
   </div>
 
-  <div style="margin-top: 20px;">
-    <label>Điểm đón:</label>
-    <input id="pickup" placeholder="Nhập địa điểm đón..." style="width: 100%;" oninput="checkProgress()">
+  <input type="hidden" id="vehicle" value="">
 
-    <label>Điểm đến:</label>
-    <input id="dropoff" placeholder="Nhập địa điểm đến..." style="width: 100%;" oninput="checkProgress()">
+  <div id="price-section">
+    <p id="result"></p>
+  </div>
 
-    <div id="vehicle-section">
-      <label>Xin mời chọn loại xe:</label>
-      <div class="vehicle-buttons">
-        <button onclick="selectVehicle('xe may')"><img src="https://img.icons8.com/emoji/48/motorcycle-emoji.png">Xe máy</button>
-        <button onclick="selectVehicle('4 cho')"><img src="https://img.icons8.com/emoji/48/oncoming-automobile.png">Ô tô 4 chỗ</button>
-        <button onclick="selectVehicle('7 cho')"><img src="https://img.icons8.com/emoji/48/minibus.png">Ô tô 7 chỗ</button>
-        <button onclick="selectVehicle('taxibot')"><img src="https://img.icons8.com/emoji/48/taxi.png">TaxiBot</button>
-      </div>
-    </div>
-
-    <input type="hidden" id="vehicle" value="">
-
-    <div id="price-section">
-      <p id="result"></p>
-    </div>
-
-    <div id="submit-section">
-      <button onclick="submitForm()">✨ Đặt xe</button>
-    </div>
+  <div id="submit-section">
+    <button onclick="submitForm()">✨ Đặt xe</button>
   </div>
 
   <script>
     const unitPrice = { "xe may": 6000, "4 cho": 10000, "7 cho": 12000, "taxibot": 11000 };
-    const supportedRegions = { "TP. HCM": true };
 
     function checkProgress() {
       const pickup = document.getElementById('pickup').value;
@@ -121,18 +126,18 @@
     }
 
     function submitForm() {
-      const region = "TP. HCM";
       const origin = document.getElementById('pickup').value;
       const destination = document.getElementById('dropoff').value;
       const vehicle = document.getElementById('vehicle').value;
       const priceText = document.getElementById('result').innerText;
       const priceMatch = priceText.match(/([0-9,.]+) đ/);
       const price = priceMatch ? parseInt(priceMatch[1].replace(/[,.]/g, '')) : 0;
+      const distance_km = parseFloat(price / (unitPrice[vehicle] || 10000)).toFixed(2);
 
       fetch('https://zipgo-webhook.tom123.repl.co/api/zipgo_webhook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ region, origin, destination, vehicle, price })
+        body: JSON.stringify({ region: "TP. HCM", origin, destination, vehicle, distance_km, price })
       });
       alert("🚗 Đặt xe thành công! Hệ thống đang điều phối tài xế...");
     }
@@ -142,3 +147,11 @@
   </script>
 </body>
 </html>
+"""
+
+# Lưu nội dung HTML thành file
+output_path = "/mnt/data/index_final.html"
+with open(output_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+output_path
